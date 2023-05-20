@@ -1,4 +1,9 @@
-import snake
+from snake import SnakeGame
 
+game = SnakeGame()
 while True:
-    snake.go()
+    game.go()
+
+    inp = input("Play again? (y/n) ")
+    if inp != "y":
+        break

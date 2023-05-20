@@ -3,154 +3,129 @@ import random
 
 pygame.init()
 
+class SnakeGame:
+
+    def __init__(self, speed = 15):
+        # Set up the screen
+        self.speed = speed
+        self.screen_width = 800
+        self.screen_height = 800
+        self.square_size = 32
+        self.side_length = self.screen_width // self.square_size
+        self.start_pos = (self.side_length // 2) * self.square_size
+        self.head_x = self.start_pos
+        self.head_y = self.start_pos
+        self.snake_squares = [
+            [self.start_pos, self.start_pos + self.square_size],
+            [self.start_pos, self.start_pos]
+        ]
+        self.snake_len = 2
+
+        self.directions = ['right', 'left', 'up', 'down']
+        self.direction = [0, 0, 1, 0]
+        self.curr_direction = ""
 
 
-# Set up the screen
-screen_width = 800
-screen_height = 800
-square_size = 32
-side_length = screen_width // square_size
-start_pos = (side_length // 2) * square_size
-head_x = start_pos
-head_y = start_pos
-snake_squares = [
-    [start_pos, start_pos + square_size],
-    [start_pos, start_pos]
-]
-snake_len = 2
-started = False
+        # Set up the Pygame window
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        pygame.display.set_caption("Snake Game")
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.screen.fill((240, 240, 240))
+        self.restart()
+    
+    def restart(self):
+        self.head_x = self.start_pos
+        self.head_y = self.start_pos
+        self.snake_squares = [
+            [self.start_pos, self.start_pos + self.square_size],
+            [self.start_pos, self.start_pos]
+        ]
+        self.running = True
+        self.snake_len = 2
+        self.direction = [0, 0, 1, 0]
+        self.curr_direction = ""
+        self.apple_x = random.randint(0, (self.screen_width // self.square_size) - 1) * self.square_size
+        self.apple_y = random.randint(0, (self.screen_height // self.square_size) - 1) * self.square_size
 
-directions = ['right', 'left', 'up', 'down']
-direction = [0, 0, 0, 0]
-curr_direction = ""
+    def apple_handler(self):
+        if self.head_x == self.apple_x and self.head_y == self.apple_y:
+            self.apple_x = random.randint(0, (self.screen_width // self.square_size) - 1) * self.square_size
+            self.apple_y = random.randint(0, (self.screen_height // self.square_size) - 1) * self.square_size
+            self.snake_len += 1
 
+        pygame.draw.rect(self.screen, (184, 0, 0), (self.apple_x, self.apple_y, self.square_size - 1, self.square_size - 1))
 
-# Set up the Pygame window
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Snake Game")
-
-screen.fill((240, 240, 240))
-def restart():
-    global started, head_x, head_y, snake_squares, snake_len, direction, apple_x, apple_y, curr_direction
-    started = False
-    head_x = start_pos
-    head_y = start_pos
-    snake_squares = [
-        [start_pos, start_pos + square_size],
-        [start_pos, start_pos]
-    ]
-    snake_len = 2
-    direction = [0, 0, 0, 0]
-    curr_direction = ""
-    apple_x = random.randint(0, (screen_width // square_size) - 1) * square_size
-    apple_y = random.randint(0, (screen_height // square_size) - 1) * square_size
-    # go()
-    # draw() # Start a new frame
-
-def apple_handler():
-    global snake_len, apple_x, apple_y
-    if head_x == apple_x and head_y == apple_y:
-        apple_x = random.randint(0, (screen_width // square_size) - 1) * square_size
-        apple_y = random.randint(0, (screen_height // square_size) - 1) * square_size
-        snake_len += 1
-
-    pygame.draw.rect(screen, (184, 0, 0), (apple_x, apple_y, square_size - 1, square_size - 1))
-
-def collision_detection():
-    if head_x < 0 or head_x >= screen_width or head_y < 0 or head_y >= screen_height:
-        return True
-
-    for i in range(len(snake_squares) - 1):
-        if snake_squares[i][0] == head_x and snake_squares[i][1] == head_y:
+    def collision_detection(self):
+        if self.head_x < 0 or self.head_x >= self.screen_width or self.head_y < 0 or self.head_y >= self.screen_height:
             return True
 
-    return False
+        for i in range(len(self.snake_squares) - 1):
+            if self.snake_squares[i][0] == self.head_x and self.snake_squares[i][1] == self.head_y:
+                return True
 
-def draw_snake():
-    for square in snake_squares:
-        pygame.draw.rect(screen, (0, 191, 0), (square[0], square[1], square_size - 2, square_size - 2))
+        return False
+
+    def draw_snake(self):
+        for square in self.snake_squares:
+            pygame.draw.rect(self.screen, (0, 191, 0), (square[0], square[1], self.square_size - 2, self.square_size - 2))
     
-def draw_score():
-    font = pygame.font.SysFont("Courier New", 35)
-    text = font.render("Score: " + str(snake_len - 2), True, (0, 0, 0))
-    text_rect = text.get_rect(topright=(screen_width - 10, 10))
-    screen.blit(text, text_rect)
-
-def draw():
-    global count, head_x, head_y, snake_squares, direction, started, curr_direction, done, running
-    if started:
-        head_x = head_x + direction[0] * square_size - direction[1] * square_size
-        head_y = head_y + direction[3] * square_size - direction[2] * square_size
-        curr_direction = directions[direction.index(1)]
-        
-        screen.fill((240, 240, 240))
-
-        if collision_detection():
-            running = False
-            return
-        snake_squares.append([head_x, head_y])
-        if len(snake_squares) > snake_len:
-            snake_squares.pop(0)
-    else:
-        screen.fill((240, 240, 240))
+    def draw_score(self):
         font = pygame.font.SysFont("Courier New", 35)
-        text = font.render("Welcome to Snake", True, (184, 0, 0))
-        text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2 - 100))
-        screen.blit(text, text_rect)
-        text = font.render("Use the arrow keys to start", True, (184, 0, 0))
-        text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
-        screen.blit(text, text_rect)
-        if direction[1]:
-            snake_squares = [
-                [start_pos, start_pos],
-                [start_pos, start_pos + square_size]
-            ]
+        text = font.render("Score: " + str(self.snake_len - 2), True, (0, 0, 0))
+        text_rect = text.get_rect(topright=(self.screen_width - 10, 10))
+        self.screen.blit(text, text_rect)
 
-    draw_snake()
-    apple_handler()
-    draw_score()
-    pygame.display.flip()
+    def draw(self):
+        self.head_x = self.head_x + self.direction[0] * self.square_size - self.direction[1] * self.square_size
+        self.head_y = self.head_y + self.direction[3] * self.square_size - self.direction[2] * self.square_size
+        self.curr_direction = self.directions[self.direction.index(1)]
 
-# Game loop
-running = True
-clock = pygame.time.Clock()
+        self.screen.fill((240, 240, 240))
 
-choice = ""
-def go():
-    restart()
-    global running, started, direction, curr_direction, choice
-    while running:
-        clock.tick(15)  # Limit frame rate to 15 FPS
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:         # If the right arrow key is pressed
-                    if curr_direction != "left":
-                        direction = [1, 0, 0, 0]
-                    started = True
-                elif event.key == pygame.K_LEFT:        # If the left arrow key is pressed
-                    if curr_direction != "right":
-                        direction = [0, 1, 0, 0]
-                    started = True
-                elif event.key == pygame.K_UP:          # If the up arrow key is pressed
-                    if curr_direction != "down":
-                        direction = [0, 0, 1, 0]
-                    started = True
-                elif event.key == pygame.K_DOWN:        # If the down arrow key is pressed
-                    if curr_direction != "up":
-                        direction = [0, 0, 0, 1]
-                    started = True
-                if event.key == pygame.K_r:
-                    restart()
-                elif event.key == pygame.K_q:
-                    running = False
-                    choice = "q"
-        draw()
+        if self.collision_detection():
+            self.running = False
+            return
+        self.snake_squares.append([self.head_x, self.head_y])
+        if len(self.snake_squares) > self.snake_len:
+            self.snake_squares.pop(0)
 
-go()
+        self.draw_snake()
+        self.apple_handler()
+        self.draw_score()
+        pygame.display.flip()
 
-pygame.quit()
+
+
+    def go(self):
+        self.restart()
+        while self.running:
+            self.clock.tick(self.speed)  # Limit frame rate to 15 FPS
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:         # If the right arrow key is pressed
+                        if self.curr_direction != "left":
+                            self.direction = [1, 0, 0, 0]
+                    elif event.key == pygame.K_LEFT:        # If the left arrow key is pressed
+                        if self.curr_direction != "right":
+                            self.direction = [0, 1, 0, 0]
+                    elif event.key == pygame.K_UP:          # If the up arrow key is pressed
+                        if self.curr_direction != "down":
+                            self.direction = [0, 0, 1, 0]
+                    elif event.key == pygame.K_DOWN:        # If the down arrow key is pressed
+                        if self.curr_direction != "up":
+                            self.direction = [0, 0, 0, 1]
+                    if event.key == pygame.K_r:
+                        restart()
+                    elif event.key == pygame.K_q:
+                        self.running = False
+            self.draw()
+
+        # pygame.quit()
+# go()
+
 
 
 #Not working entirely. Might need to turn into a class in order to be used by other files for agent control.
