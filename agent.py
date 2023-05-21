@@ -25,8 +25,8 @@ class Agent:
 
 
     def get_state(self, game):
-        point_l = [game.head_x - game.square_size, game.head_x]
-        point_r = [game.head_x + game.square_size, game.head_x]
+        point_l = [game.head_x - game.square_size, game.head_y]
+        point_r = [game.head_x + game.square_size, game.head_y]
         point_u = [game.head_x, game.head_y - game.square_size]
         point_d = [game.head_x, game.head_y + game.square_size]
         
@@ -61,10 +61,10 @@ class Agent:
             dir_d,
             
             # Food location 
-            game.apple_x / game.side_length,  # food location x component, normalized
-            game.apple_y / game.side_length, # food location y component, normalized
-            game.head_x  / game.side_length, # head location x component, normalized
-            game.head_y  / game.side_length # head location y component, normalized
+            game.apple_x < game.head_x,  # food left
+            game.apple_x > game.head_x,  # food right
+            game.apple_y < game.head_y,  # food up
+            game.apple_y > game.head_y  # food down
             ]
 
         return np.array(state, dtype=int)
@@ -88,9 +88,9 @@ class Agent:
 
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation
-        self.epsilon = 80 - self.n_games
+        self.epsilon = 400 - self.n_games
         final_move = [0,0,0]
-        if random.randint(0, 200) < self.epsilon:
+        if random.randint(0, 500) < self.epsilon:
             move = random.randint(0, 2)
             final_move[move] = 1
         else:
@@ -155,7 +155,7 @@ def train():
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+            # plot(plot_scores, plot_mean_scores)
 
 
 if __name__ == '__main__':
