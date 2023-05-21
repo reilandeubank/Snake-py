@@ -1,9 +1,8 @@
-from snake import SnakeGame
+import matplotlib.pyplot as plt
+import numpy as np
 
-game = SnakeGame()
-while True:
-    game.go([1,0,0])
+xpoints = np.array([0, 6])
+ypoints = np.array([0, 250])
 
-    inp = input("Play again? (y/n) ")
-    if inp != "y":
-        break
+plt.plot(xpoints, ypoints)
+plt.show()
