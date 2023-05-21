@@ -2,9 +2,12 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from snake import SnakeGameAI, Direction, Point
+from snake import SnakeGame
 from model import Linear_QNet, QTrainer
 from helper import plot
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(device)
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -22,35 +25,34 @@ class Agent:
 
 
     def get_state(self, game):
-        head = game.snake[0]
-        point_l = Point(head.x - 20, head.y)
-        point_r = Point(head.x + 20, head.y)
-        point_u = Point(head.x, head.y - 20)
-        point_d = Point(head.x, head.y + 20)
+        point_l = [game.head_x - game.square_size, game.head_x]
+        point_r = [game.head_x + game.square_size, game.head_x]
+        point_u = [game.head_x, game.head_y - game.square_size]
+        point_d = [game.head_x, game.head_y + game.square_size]
         
-        dir_l = game.direction == Direction.LEFT
-        dir_r = game.direction == Direction.RIGHT
-        dir_u = game.direction == Direction.UP
-        dir_d = game.direction == Direction.DOWN
+        dir_r = game.direction[0]
+        dir_l = game.direction[1]
+        dir_u = game.direction[2]
+        dir_d = game.direction[3]
 
         state = [
             # Danger straight
-            (dir_r and game.is_collision(point_r)) or 
-            (dir_l and game.is_collision(point_l)) or 
-            (dir_u and game.is_collision(point_u)) or 
-            (dir_d and game.is_collision(point_d)),
+            (dir_r and game.collision_detection(point_r)) or 
+            (dir_l and game.collision_detection(point_l)) or 
+            (dir_u and game.collision_detection(point_u)) or 
+            (dir_d and game.collision_detection(point_d)),
 
             # Danger right
-            (dir_u and game.is_collision(point_r)) or 
-            (dir_d and game.is_collision(point_l)) or 
-            (dir_l and game.is_collision(point_u)) or 
-            (dir_r and game.is_collision(point_d)),
+            (dir_u and game.collision_detection(point_r)) or 
+            (dir_d and game.collision_detection(point_l)) or 
+            (dir_l and game.collision_detection(point_u)) or 
+            (dir_r and game.collision_detection(point_d)),
 
             # Danger left
-            (dir_d and game.is_collision(point_r)) or 
-            (dir_u and game.is_collision(point_l)) or 
-            (dir_r and game.is_collision(point_u)) or 
-            (dir_l and game.is_collision(point_d)),
+            (dir_d and game.collision_detection(point_r)) or 
+            (dir_u and game.collision_detection(point_l)) or 
+            (dir_r and game.collision_detection(point_u)) or 
+            (dir_l and game.collision_detection(point_d)),
             
             # Move direction
             dir_l,
@@ -59,10 +61,10 @@ class Agent:
             dir_d,
             
             # Food location 
-            game.food.x < game.head.x,  # food left
-            game.food.x > game.head.x,  # food right
-            game.food.y < game.head.y,  # food up
-            game.food.y > game.head.y  # food down
+            game.apple_x < game.head_x,  # food left
+            game.apple_x > game.head_x,  # food right
+            game.apple_y < game.head_y,  # food up
+            game.apple_y > game.head_y  # food down
             ]
 
         return np.array(state, dtype=int)
@@ -106,8 +108,11 @@ def train():
     total_score = 0
     record = 0
     agent = Agent()
-    game = SnakeGameAI()
+    speed = 300
+    game = SnakeGame(speed)
+    game.restart()
     while True:
+        # game.clock.tick(game.speed)
         # get old state
         state_old = agent.get_state(game)
 
@@ -115,7 +120,9 @@ def train():
         final_move = agent.get_action(state_old)
 
         # perform move and get new state
-        reward, done, score = game.play_step(final_move)
+        reward, done, score, speedChange = game.go(final_move)
+
+        # print(final_move)
         state_new = agent.get_state(game)
 
         # train short memory
@@ -124,9 +131,17 @@ def train():
         # remember
         agent.remember(state_old, final_move, reward, state_new, done)
 
+        if speedChange == "Up":
+            speed += 10
+            print("speed: ", speed)
+        elif speedChange == "Down":
+            speed -= 10
+            print("speed:", speed)
         if done:
             # train long memory, plot result
-            game.reset()
+            del game
+            game = SnakeGame(speed)
+            # game.restart()
             agent.n_games += 1
             agent.train_long_memory()
 
