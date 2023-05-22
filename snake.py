@@ -12,7 +12,7 @@ class SnakeGame:
         self.screen_width = 800
         self.screen_height = 800
         self.square_size = 32
-        self.side_length = self.screen_width // self.square_size
+        self.side_length = float(self.screen_width // self.square_size)
         self.start_pos = (self.side_length // 2) * self.square_size
         self.frame_iteration = 0
 
@@ -59,11 +59,22 @@ class SnakeGame:
         if point[0] < 0 or point[0] >= self.screen_width or point[1] < 0 or point[1] >= self.screen_height:
             return True
 
-        for i in range(len(self.snake_squares) - 1):
+        for i in range(len(self.snake_squares) - 3):
             if self.snake_squares[i][0] == point[0] and self.snake_squares[i][1] == point[1]:
                 return True
 
         return False
+
+    def vision(self, heading):
+        collided = False
+        point = [self.head_x + heading[0] * self.square_size - heading[1] * self.square_size,
+                 self.head_y + heading[3] * self.square_size - heading[2] * self.square_size]
+        distance = 0
+        while not self.collision_detection(point):
+            point[0] = point[0] + heading[0] * self.square_size * distance - heading[1] * self.square_size * distance
+            point[1] = point[1] + heading[3] * self.square_size * distance - heading[2] * self.square_size * distance
+            distance += 1
+        return float(distance) / float(self.side_length)
 
     def draw_snake(self):
         for square in self.snake_squares:

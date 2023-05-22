@@ -35,39 +35,38 @@ class Agent:
         dir_u = game.direction[2]
         dir_d = game.direction[3]
 
-        state = [
-            # Danger straight
-            (dir_r and game.collision_detection(point_r)) or 
-            (dir_l and game.collision_detection(point_l)) or 
-            (dir_u and game.collision_detection(point_u)) or 
-            (dir_d and game.collision_detection(point_d)),
+        state = []
+        
+        if dir_r:
+            state.append(game.vision([1, 0, 0, 0]))       #straight (right)
+            state.append(game.vision([0, 0, 0, 1]))       #right (down)
+            state.append(game.vision([0, 0, 1, 0]))       #left (up)
+        elif dir_l:
+            state.append(game.vision([0, 1, 0, 0]))       #straight (left)
+            state.append(game.vision([0, 0, 1, 0]))       #right(up)
+            state.append(game.vision([0, 0, 0, 1]))       #left (down)
+        elif dir_u:
+            state.append(game.vision([0, 0, 1, 0]))       #straight (up) 
+            state.append(game.vision([1, 0, 0, 0]))       #right (right)
+            state.append(game.vision([0, 1, 0, 0]))       #left (left) 
+        elif dir_d:
+            state.append(game.vision([0, 0, 0, 1]))       #straight (down)
+            state.append(game.vision([0, 1, 0, 0]))       #right (left) 
+            state.append(game.vision([1, 0, 0, 0]))       #left (right) 
 
-            # Danger right
-            (dir_u and game.collision_detection(point_r)) or 
-            (dir_d and game.collision_detection(point_l)) or 
-            (dir_l and game.collision_detection(point_u)) or 
-            (dir_r and game.collision_detection(point_d)),
+        state.append(dir_r)
+        state.append(dir_l)
+        state.append(dir_u)
+        state.append(dir_d)
 
-            # Danger left
-            (dir_d and game.collision_detection(point_r)) or 
-            (dir_u and game.collision_detection(point_l)) or 
-            (dir_r and game.collision_detection(point_u)) or 
-            (dir_l and game.collision_detection(point_d)),
-            
-            # Move direction
-            dir_l,
-            dir_r,
-            dir_u,
-            dir_d,
-            
             # Food location 
-            game.apple_x < game.head_x,  # food left
-            game.apple_x > game.head_x,  # food right
-            game.apple_y < game.head_y,  # food up
-            game.apple_y > game.head_y  # food down
-            ]
+        state.append(game.apple_x < game.head_x)  # food left
+        state.append(game.apple_x > game.head_x)  # food right
+        state.append(game.apple_y < game.head_y)  # food up
+        state.append(game.apple_y > game.head_y)  # food down
 
-        return np.array(state, dtype=int)
+        # print(state)
+        return np.array(state, dtype=float)
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done)) # popleft if MAX_MEMORY is reached
@@ -88,7 +87,7 @@ class Agent:
 
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation
-        self.epsilon = 400 - self.n_games
+        self.epsilon = min(25, 400 - self.n_games)
         final_move = [0,0,0]
         if random.randint(0, 500) < self.epsilon:
             move = random.randint(0, 2)
