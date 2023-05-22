@@ -59,11 +59,24 @@ class SnakeGame:
         if point[0] < 0 or point[0] >= self.screen_width or point[1] < 0 or point[1] >= self.screen_height:
             return True
 
-        for i in range(len(self.snake_squares) - 1):
+        for i in range(len(self.snake_squares) - 3):            # -3 because it is impossible to hit the snake's head or 2 squares behind the head
             if self.snake_squares[i][0] == point[0] and self.snake_squares[i][1] == point[1]:
                 return True
 
         return False
+
+    def vision(self):
+        points = []
+        
+        for i in range(-2, 3):
+            row = []
+            for j in range(-2, 3):
+                row.append(int(self.collision_detection([self.head_x + j*self.square_size, self.head_y+ i*self.square_size])))
+                if self.apple_x == self.head_x + j*self.square_size and self.apple_y == self.head_y + i*self.square_size:
+                    row[-1] = -1
+            points.append(row)
+        return points
+
 
     def draw_snake(self):
         for square in self.snake_squares:
@@ -92,7 +105,7 @@ class SnakeGame:
 
         self.draw_snake()
         if self.apple_handler():
-            reward = 10
+            reward = 50
         self.draw_score()
         pygame.display.flip()
         # print(reward, game_over, self.snake_len - 2)
@@ -111,18 +124,9 @@ class SnakeGame:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:         # If the right arrow key is pressed
                     speedChange = "Up" 
-                    # if self.curr_direction != "left":
-                    #     self.direction = [1, 0, 0, 0]
                 elif event.key == pygame.K_LEFT:        # If the left arrow key is pressed
                     speedChange = "Down"
-                    # if self.curr_direction != "right":
-                    #     self.direction = [0, 1, 0, 0]
-        #         elif event.key == pygame.K_UP:          # If the up arrow key is pressed
-        #             if self.curr_direction != "down":
-        #                 self.direction = [0, 0, 1, 0]
-        #         elif event.key == pygame.K_DOWN:        # If the down arrow key is pressed
-        #             if self.curr_direction != "up":
-        #                 self.direction = [0, 0, 0, 1]
+
 
 
         clock_wise = ["right", "down", "left", "up"]

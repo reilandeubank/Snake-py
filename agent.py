@@ -11,20 +11,21 @@ from helper import plot
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LR = 0.001
+LR = 0.005
 
 class Agent:
 
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0 # randomness
-        self.gamma = 0.9 # discount rate
+        self.gamma = 0.95 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(11, 200, 3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
 
     def get_state(self, game):
+        # game_vision = game.vision()
         point_l = [game.head_x - game.square_size, game.head_y]
         point_r = [game.head_x + game.square_size, game.head_y]
         point_u = [game.head_x, game.head_y - game.square_size]
@@ -35,7 +36,31 @@ class Agent:
         dir_u = game.direction[2]
         dir_d = game.direction[3]
 
+        # if dir_u or dir_d:
+        #     if dir_d:
+        #         game_vision.reverse()
+        #     for i in range(len(game_vision)):
+        #         for j in range(len(game_vision[i])):
+        #             state.append(game_vision[i][j])
+        # elif dir_l:
+        #     game_vision.reverse()
+        #     for j in range(len(game_vision[j])):
+        #         for i in range(len(game_vision)):
+        #             state.append(game_vision[i][j])
+        # elif dir_r:
+        #     game_vision.reverse()
+        #     for j in range(len(game_vision[j])):
+        #         for i in range(len(game_vision)):
+        #             state.append(game_vision[i][j])
+                
         state = [
+            # # Vision all around the head (head at 2,2)
+            # game_vision[0][0], game_vision[0][1], game_vision[0][2], game_vision[0][3], game_vision[0][4],
+            # game_vision[1][0], game_vision[1][1], game_vision[1][2], game_vision[1][3], game_vision[1][4],
+            # game_vision[2][0], game_vision[2][1], game_vision[2][2], game_vision[2][3], game_vision[2][4],
+            # game_vision[3][0], game_vision[3][1], game_vision[3][2], game_vision[3][3], game_vision[3][4],
+            # game_vision[4][0], game_vision[4][1], game_vision[4][2], game_vision[4][3], game_vision[4][4],
+            # Danger straight
             # Danger straight
             (dir_r and game.collision_detection(point_r)) or 
             (dir_l and game.collision_detection(point_l)) or 
@@ -53,7 +78,7 @@ class Agent:
             (dir_u and game.collision_detection(point_l)) or 
             (dir_r and game.collision_detection(point_u)) or 
             (dir_l and game.collision_detection(point_d)),
-            
+
             # Move direction
             dir_l,
             dir_r,
@@ -149,6 +174,8 @@ def train():
                 record = score
                 agent.model.save()
 
+            # print("Final State: ", state_old)
+            # print("Final Move: ", final_move)
             print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
             plot_scores.append(score)
