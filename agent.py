@@ -20,15 +20,15 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(11, 150, 3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
 
     def get_state(self, game):
-        point_l = [game.head_x - game.square_size, game.head_y]
-        point_r = [game.head_x + game.square_size, game.head_y]
-        point_u = [game.head_x, game.head_y - game.square_size]
-        point_d = [game.head_x, game.head_y + game.square_size]
+        # point_l = [game.head_x - game.square_size, game.head_y]
+        # point_r = [game.head_x + game.square_size, game.head_y]
+        # point_u = [game.head_x, game.head_y - game.square_size]
+        # point_d = [game.head_x, game.head_y + game.square_size]
         
         dir_r = game.direction[0]
         dir_l = game.direction[1]
@@ -89,6 +89,8 @@ class Agent:
         # random moves: tradeoff exploration / exploitation
         self.epsilon = min(25, 400 - self.n_games)
         final_move = [0,0,0]
+        # if state[0] <= 0.05:
+        #     self.epsilon = max(250, self.epsilon)
         if random.randint(0, 500) < self.epsilon:
             move = random.randint(0, 2)
             final_move[move] = 1

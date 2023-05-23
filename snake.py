@@ -103,7 +103,7 @@ class SnakeGame:
 
         self.draw_snake()
         if self.apple_handler():
-            reward = 10
+            reward = 10 * (self.snake_len-2)
         self.draw_score()
         pygame.display.flip()
         # print(reward, game_over, self.snake_len - 2)
