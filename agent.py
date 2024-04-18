@@ -9,7 +9,7 @@ from helper import plot
 # print(torch.cuda.is_available())
 # print(torch.cuda.get_device_name(0))
 
-MAX_MEMORY = 100_000
+MAX_MEMORY = 100000
 BATCH_SIZE = 1000
 LR = 0.001
 

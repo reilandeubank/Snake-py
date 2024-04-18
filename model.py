@@ -10,18 +10,12 @@ class Linear_QNet(nn.Module):
         self.linear1 = nn.Linear(input_size, hidden_size)
         self.linear2 = nn.Linear(hidden_size, hidden_size)
         self.linear3 = nn.Linear(hidden_size, hidden_size)
-        self.linear4 = nn.Linear(hidden_size, hidden_size)
-        self.linear5 = nn.Linear(hidden_size, hidden_size)
-        self.linear6 = nn.Linear(hidden_size, hidden_size)
         self.linearOut = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
         x = F.relu(self.linear3(x))
-        x = F.relu(self.linear4(x))
-        x = F.relu(self.linear5(x))
-        x = F.relu(self.linear6(x))
         x = self.linearOut(x)
         return x
 
