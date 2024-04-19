@@ -60,10 +60,26 @@ class Agent:
         state.append(dir_d)
 
             # Food location 
-        state.append(game.apple_x < game.head_x)  # food left
-        state.append(game.apple_x > game.head_x)  # food right
-        state.append(game.apple_y < game.head_y)  # food up
-        state.append(game.apple_y > game.head_y)  # food down
+        if dir_u: # facing up
+            state.append(game.apple_x < game.head_x)  # food left
+            state.append(game.apple_x > game.head_x)  # food right
+            state.append(game.apple_y < game.head_y)  # food up
+            state.append(game.apple_y > game.head_y)  # food down
+        elif dir_d:
+            state.append(game.apple_x > game.head_x)
+            state.append(game.apple_x < game.head_x)
+            state.append(game.apple_y > game.head_y)
+            state.append(game.apple_y < game.head_y)
+        elif dir_l:
+            state.append(game.apple_y > game.head_y)
+            state.append(game.apple_y < game.head_y)
+            state.append(game.apple_x < game.head_x)
+            state.append(game.apple_x > game.head_x)
+        elif dir_r:
+            state.append(game.apple_y < game.head_y)
+            state.append(game.apple_y > game.head_y)
+            state.append(game.apple_x > game.head_x)
+            state.append(game.apple_x < game.head_x)
 
         # print(state)
         return np.array(state, dtype=float)
@@ -156,7 +172,7 @@ def train():
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores)
+            plot(plot_scores, plot_mean_scores)
 
 
 if __name__ == '__main__':
